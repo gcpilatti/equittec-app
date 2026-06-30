@@ -26,7 +26,7 @@ const VAZIO = {
 
 const baseCls =
   'w-full border border-gray-200 rounded-lg px-3 py-2.5 text-gray-800 text-sm ' +
-  'focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent ' +
+  'focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent ' +
   'bg-gray-50 transition placeholder:text-gray-300';
 
 function Field({ label, required, children }) {
@@ -57,8 +57,8 @@ function Textarea({ label, required, ...props }) {
 }
 function SectionCard({ title, children }) {
   return (
-    <div className="bg-white rounded-lg overflow-hidden border border-gray-100">
-      <div className="bg-orange-500 px-4 py-2">
+    <div className="bg-white rounded-xl overflow-hidden border border-gray-100 shadow-sm">
+      <div className="bg-brand px-4 py-2">
         <h2 className="text-white text-[11px] font-bold uppercase tracking-widest">{title}</h2>
       </div>
       <div className="p-4 space-y-4">{children}</div>
@@ -140,7 +140,7 @@ export default function FormularioVisita({ visitaExistente, onVoltar, usuarioEma
   }, []);
 
   const set = field => e => setForm(prev => ({ ...prev, [field]: e.target.value }));
-  const totalAnimaisLeite = (Number(form.vacasEmLactacao) || 0) + (Number(form.novilhas) || 0) + (Number(form.vacasSecas) || 0);
+  const totalAnimaisLeite = (Number(form.vacasEmLactacao)||0) + (Number(form.novilhas)||0) + (Number(form.vacasSecas)||0);
   const mostrarCamposSilobag = form.utilizaSilobag === 'SIM';
   const mostrarDetalhesInoculante = form.usaInoculante.trim().length > 0;
 
@@ -156,25 +156,24 @@ export default function FormularioVisita({ visitaExistente, onVoltar, usuarioEma
       clienteId: form.clienteId, clienteNome: form.clienteNome, localizacao: form.localizacao,
       dataVisita: form.dataVisita, nVisita: Number(form.nVisita), motivoVisita: form.motivoVisita,
       vendedorId: form.vendedorId, vendedorNome: form.vendedorNome,
-      granja: form.granja, nAnimaisSuinos: Number(form.nAnimaisSuinos) || null,
+      granja: form.granja, nAnimaisSuinos: Number(form.nAnimaisSuinos)||null,
       tipoProducao: form.tipoProducao, semen: form.semen, nutricaoUtilizada: form.nutricaoUtilizada, obsSuinos: form.obsSuinos,
-      gadoCorte: Number(form.gadoCorte) || null, obsGadoCorte: form.obsGadoCorte,
-      vacasEmLactacao: Number(form.vacasEmLactacao) || null, novilhas: Number(form.novilhas) || null,
-      vacasSecas: Number(form.vacasSecas) || null, totalAnimaisLeite,
-      consumoSilagem: Number(form.consumoSilagem) || null, producaoMedia: Number(form.producaoMedia) || null, obsBovLeite: form.obsBovLeite,
-      tipoSilo: form.tipoSilo, tipoLona: form.tipoLona, tamanhoLona: form.tamanhoLona, valorLona: Number(form.valorLona) || null,
+      gadoCorte: Number(form.gadoCorte)||null, obsGadoCorte: form.obsGadoCorte,
+      vacasEmLactacao: Number(form.vacasEmLactacao)||null, novilhas: Number(form.novilhas)||null,
+      vacasSecas: Number(form.vacasSecas)||null, totalAnimaisLeite,
+      consumoSilagem: Number(form.consumoSilagem)||null, producaoMedia: Number(form.producaoMedia)||null, obsBovLeite: form.obsBovLeite,
+      tipoSilo: form.tipoSilo, tipoLona: form.tipoLona, tamanhoLona: form.tamanhoLona, valorLona: Number(form.valorLona)||null,
       usaInoculante: form.usaInoculante, tiposBacterias: form.tiposBacterias,
-      concentracaoInoculante: Number(form.concentracaoInoculante) || null,
-      doseInoculante: Number(form.doseInoculante) || null, valorInoculante: Number(form.valorInoculante) || null,
+      concentracaoInoculante: Number(form.concentracaoInoculante)||null,
+      doseInoculante: Number(form.doseInoculante)||null, valorInoculante: Number(form.valorInoculante)||null,
       utilizaSilobag: form.utilizaSilobag,
       comprimentoLargura: mostrarCamposSilobag ? form.comprimentoLargura : null,
-      gramatura: mostrarCamposSilobag ? (Number(form.gramatura) || null) : null,
+      gramatura: mostrarCamposSilobag ? (Number(form.gramatura)||null) : null,
       garantiaProduto: mostrarCamposSilobag ? form.garantiaProduto : null,
-      valorSilobag: mostrarCamposSilobag ? (Number(form.valorSilobag) || null) : null,
+      valorSilobag: mostrarCamposSilobag ? (Number(form.valorSilobag)||null) : null,
       obsSilobag: mostrarCamposSilobag ? form.obsSilobag : null,
       obsVisita: form.obsVisita, proximoContato: form.proximoContato, obsProximoContato: form.obsProximoContato,
     };
-
     try {
       if (editando) {
         await updateDoc(doc(db, 'visitas', visitaExistente.id), { ...payload, atualizadoEm: serverTimestamp() });
@@ -182,42 +181,35 @@ export default function FormularioVisita({ visitaExistente, onVoltar, usuarioEma
       } else {
         await addDoc(collection(db, 'visitas'), { ...payload, criadoEm: serverTimestamp(), criadoPorId: usuarioId, criadoPorEmail: usuarioEmail });
         setFeedback({ tipo: 'sucesso', msg: `Visita N° ${form.nVisita} de ${form.clienteNome} salva!` });
-        setForm(VAZIO);
-        setBuscaCliente('');
+        setForm(VAZIO); setBuscaCliente('');
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     } catch (err) {
       console.error(err);
       setFeedback({ tipo: 'erro', msg: 'Erro ao salvar. Será sincronizado ao reconectar.' });
-    } finally {
-      setEnviando(false);
-    }
+    } finally { setEnviando(false); }
   }
 
   return (
     <form onSubmit={onSubmit} className="min-h-screen bg-gray-100 pb-20">
-
       {/* Header */}
-      <div className="sticky top-0 z-40 bg-orange-500 px-3 pt-10 pb-3 shadow flex items-center gap-3">
-        <button type="button" onClick={onVoltar} className="p-1.5 text-white hover:text-orange-200 transition">
+      <div className="sticky top-0 z-40 bg-brand px-3 pt-10 pb-3 shadow flex items-center gap-3">
+        <button type="button" onClick={onVoltar} className="p-1.5 text-white hover:text-white/70 transition">
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
           </svg>
         </button>
         <div className="flex-1">
-          <h1 className="text-white font-bold text-base tracking-wide">
-            {editando ? 'EDITAR VISITA' : 'NOVA VISITA'}
-          </h1>
-          <p className="text-orange-200 text-[11px]">Equitec Agropecuária</p>
+          <h1 className="text-white font-bold text-base tracking-wide">{editando ? 'EDITAR VISITA' : 'NOVA VISITA'}</h1>
+          <p className="text-white/70 text-[11px]">Equitec Agropecuária</p>
         </div>
-        <div className="bg-orange-400 rounded-lg px-3 py-1 text-center">
-          <span className="text-orange-100 text-[9px] block uppercase tracking-wide">Visita</span>
+        <div className="bg-brand-dark/40 rounded-lg px-3 py-1 text-center">
+          <span className="text-white/70 text-[9px] block uppercase tracking-wide">Visita</span>
           <span className="text-white font-black text-base leading-none">#{String(form.nVisita).padStart(2,'0')}</span>
         </div>
       </div>
 
       <div className="px-3 mt-3 space-y-3">
-
         {feedback && (
           <div role="alert" className={`rounded-lg px-4 py-3 text-sm font-medium border ${feedback.tipo === 'sucesso' ? 'bg-green-50 text-green-700 border-green-200' : 'bg-red-50 text-red-700 border-red-200'}`}>
             {feedback.msg}
@@ -238,7 +230,7 @@ export default function FormularioVisita({ visitaExistente, onVoltar, usuarioEma
               <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-white border border-gray-200 rounded-lg shadow-xl max-h-52 overflow-y-auto">
                 {clientesFiltrados.map(c => (
                   <button key={c.id} type="button"
-                    className="w-full flex flex-col items-start px-4 py-2.5 hover:bg-orange-50 border-b border-gray-50 last:border-0 text-left"
+                    className="w-full flex flex-col items-start px-4 py-2.5 hover:bg-brand/10 border-b border-gray-50 last:border-0 text-left"
                     onMouseDown={() => aoSelecionarCliente(c)}>
                     <span className="font-semibold text-gray-800 text-sm">{c.pesNome}</span>
                     <span className="text-[11px] text-gray-400">Cód. #{c.pesCodigo}{c.cidadeUf ? ` · ${c.cidadeUf}` : ''}</span>
@@ -249,21 +241,19 @@ export default function FormularioVisita({ visitaExistente, onVoltar, usuarioEma
           </div>
 
           {carregandoHistorico && (
-            <div className="flex items-center gap-2 bg-orange-50 text-orange-600 rounded-lg px-3 py-2 text-sm">
-              <span className="w-4 h-4 border-2 border-orange-500 border-t-transparent rounded-full animate-spin shrink-0" />
+            <div className="flex items-center gap-2 bg-brand/10 text-brand-dark rounded-lg px-3 py-2 text-sm">
+              <span className="w-4 h-4 border-2 border-brand border-t-transparent rounded-full animate-spin shrink-0" />
               Buscando histórico...
             </div>
           )}
 
           <div className="grid grid-cols-2 gap-3">
             <Field label="N° da Visita">
-              <input type="number" value={form.nVisita} readOnly className={`${baseCls} bg-orange-50 text-orange-600 font-bold cursor-not-allowed`} />
+              <input type="number" value={form.nVisita} readOnly className={`${baseCls} bg-brand/10 text-brand-dark font-bold cursor-not-allowed`} />
             </Field>
             <Input label="Data da Visita" required type="date" value={form.dataVisita} onChange={set('dataVisita')} />
           </div>
-
           <Select label="Motivo da Visita" options={MOTIVOS_VISITA} value={form.motivoVisita} onChange={set('motivoVisita')} />
-
           <Field label="Vendedor">
             <select className={`${baseCls} appearance-none`} value={form.vendedorNome}
               onChange={e => {
@@ -274,7 +264,6 @@ export default function FormularioVisita({ visitaExistente, onVoltar, usuarioEma
               {vendedores.map(v => <option key={v.id} value={v.nome}>{v.nome}</option>)}
             </select>
           </Field>
-
           <Field label="Localização (Lat/Long)">
             <input type="text" value={form.localizacao} readOnly placeholder="Preenchido ao selecionar o cliente" className={`${baseCls} cursor-not-allowed text-gray-400`} />
           </Field>
@@ -304,9 +293,9 @@ export default function FormularioVisita({ visitaExistente, onVoltar, usuarioEma
             <Input label="Novilhas" type="number" inputMode="numeric" placeholder="0" value={form.novilhas} onChange={set('novilhas')} />
             <Input label="Vacas Secas" type="number" inputMode="numeric" placeholder="0" value={form.vacasSecas} onChange={set('vacasSecas')} />
           </div>
-          <div className="flex items-center justify-between bg-orange-50 rounded-lg px-4 py-2">
-            <span className="text-xs font-bold text-orange-600 uppercase tracking-wide">Total de Animais</span>
-            <span className="text-orange-700 font-black text-xl">{totalAnimaisLeite > 0 ? totalAnimaisLeite : '—'}</span>
+          <div className="flex items-center justify-between bg-brand/10 rounded-lg px-4 py-2">
+            <span className="text-xs font-bold text-brand-dark uppercase tracking-wide">Total de Animais</span>
+            <span className="text-brand-dark font-black text-xl">{totalAnimaisLeite > 0 ? totalAnimaisLeite : '—'}</span>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <Input label="Consumo de Silagem (kg/dia)" type="number" inputMode="decimal" placeholder="Ex: 253.2" value={form.consumoSilagem} onChange={set('consumoSilagem')} />
@@ -340,7 +329,7 @@ export default function FormularioVisita({ visitaExistente, onVoltar, usuarioEma
         <SectionCard title="Silo Bag">
           <Select label="Utiliza Silo Bag?" options={OPCOES_SIM_NAO} value={form.utilizaSilobag} onChange={set('utilizaSilobag')} />
           {mostrarCamposSilobag && (
-            <div className="space-y-3 border-t border-dashed border-orange-100 pt-3">
+            <div className="space-y-3 border-t border-dashed border-gray-200 pt-3">
               <div className="grid grid-cols-2 gap-3">
                 <Input label="Comprimento e Largura" type="text" placeholder="Ex: 60 x 2.7" value={form.comprimentoLargura} onChange={set('comprimentoLargura')} />
                 <Input label="Gramatura (g/m²)" type="number" inputMode="numeric" placeholder="Ex: 200" value={form.gramatura} onChange={set('gramatura')} />
@@ -363,15 +352,13 @@ export default function FormularioVisita({ visitaExistente, onVoltar, usuarioEma
         </SectionCard>
 
         <button type="submit" disabled={enviando}
-          className="w-full bg-orange-500 hover:bg-orange-600 active:scale-[0.98] text-white font-bold py-4 rounded-xl text-sm shadow-lg transition-all disabled:opacity-60 flex items-center justify-center gap-2">
+          className="w-full bg-brand hover:bg-brand-dark active:scale-[0.98] text-white font-bold py-4 rounded-xl text-sm shadow-lg transition-all disabled:opacity-60 flex items-center justify-center gap-2">
           {enviando
             ? <><span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />Salvando...</>
             : editando ? 'Salvar Alterações' : `Salvar Visita N° ${form.nVisita}`}
         </button>
 
-        <p className="text-center text-[10px] text-gray-300 pb-2">
-          Offline-First — sincroniza automaticamente ao reconectar
-        </p>
+        <p className="text-center text-[10px] text-gray-300 pb-2">Offline-First — sincroniza automaticamente ao reconectar</p>
       </div>
     </form>
   );

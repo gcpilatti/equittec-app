@@ -34,17 +34,17 @@ export default function Login() {
 
   const inputCls =
     'w-full border border-gray-200 rounded-lg px-4 py-3 text-gray-800 text-sm ' +
-    'focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent ' +
+    'focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent ' +
     'bg-white transition placeholder:text-gray-300';
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col">
-      <div className="bg-orange-500 px-6 pt-20 pb-12 flex flex-col items-center">
+      <div className="bg-brand px-6 pt-20 pb-12 flex flex-col items-center">
         <div className="w-16 h-16 bg-white rounded-xl flex items-center justify-center shadow mb-4">
-          <span className="text-orange-500 font-black text-2xl tracking-tight">EQ</span>
+          <span className="text-brand font-black text-2xl tracking-tight">EQ</span>
         </div>
         <h1 className="text-white text-2xl font-bold">Equitec</h1>
-        <p className="text-orange-200 text-sm mt-1">Agenda de Visitas</p>
+        <p className="text-white/70 text-sm mt-1">Agenda de Visitas</p>
       </div>
 
       <div className="flex-1 px-5 -mt-6">
@@ -81,7 +81,7 @@ export default function Login() {
             )}
 
             <button type="submit" disabled={carregando}
-              className="w-full bg-orange-500 hover:bg-orange-600 active:scale-[0.98] text-white font-bold py-3.5 rounded-xl text-sm shadow transition-all disabled:opacity-60 flex items-center justify-center gap-2 mt-2">
+              className="w-full bg-brand hover:bg-brand-dark active:scale-[0.98] text-white font-bold py-3.5 rounded-xl text-sm shadow transition-all disabled:opacity-60 flex items-center justify-center gap-2 mt-2">
               {carregando
                 ? <><span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />Entrando...</>
                 : 'Entrar'}

@@ -10,35 +10,26 @@ export default function ClientesComVisitas() {
   useEffect(() => {
     async function carregar() {
       try {
-        const snap = await getDocs(
-          query(collection(db, 'visitas'), orderBy('clienteNome', 'asc'))
-        );
-
+        const snap = await getDocs(query(collection(db, 'visitas'), orderBy('clienteNome', 'asc')));
         const mapa = {};
         snap.docs.forEach(d => {
           const v = d.data();
           const nome = v.clienteNome || '(sem nome)';
-          if (!mapa[nome]) {
-            mapa[nome] = { nome, total: 0, ultimaVisita: '', vendedor: v.vendedorNome || '' };
-          }
+          if (!mapa[nome]) mapa[nome] = { nome, total: 0, ultimaVisita: '', vendedor: v.vendedorNome || '' };
           mapa[nome].total++;
           if (!mapa[nome].ultimaVisita || v.dataVisita > mapa[nome].ultimaVisita) {
             mapa[nome].ultimaVisita = v.dataVisita;
-            mapa[nome].vendedor    = v.vendedorNome || mapa[nome].vendedor;
+            mapa[nome].vendedor = v.vendedorNome || mapa[nome].vendedor;
           }
         });
-
         setClientes(Object.values(mapa).sort((a, b) => a.nome.localeCompare(b.nome)));
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setCarregando(false);
-      }
+      } catch (err) { console.error(err); }
+      finally { setCarregando(false); }
     }
     carregar();
   }, []);
 
-  function formatarData(str) {
+  function fmt(str) {
     if (!str || !str.includes('-')) return '';
     const [y, m, d] = str.split('-');
     return `${d}/${m}/${y}`;
@@ -50,14 +41,12 @@ export default function ClientesComVisitas() {
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-100">
-      <div className="bg-orange-500 px-3 pt-10 pb-2 flex items-center gap-2 shadow">
+      <div className="bg-brand px-3 pt-10 pb-2 flex items-center gap-2 shadow">
         <button className="p-2 text-white">
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" /></svg>
         </button>
         <div className="w-7 h-7 bg-white rounded flex items-center justify-center mr-1">
-          <span className="text-orange-500 font-black text-xs">EQ</span>
+          <span className="text-brand font-black text-xs">EQ</span>
         </div>
         <span className="text-white font-bold text-base flex-1 tracking-wide">CLIENTES COM VISITAS</span>
       </div>
@@ -65,13 +54,13 @@ export default function ClientesComVisitas() {
       <div className="bg-white px-3 py-2 border-b border-gray-200">
         <input type="search" placeholder="Buscar cliente..."
           value={busca} onChange={e => setBusca(e.target.value)}
-          className="w-full bg-gray-100 rounded-lg px-3 py-2 text-sm text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-400" />
+          className="w-full bg-gray-100 rounded-lg px-3 py-2 text-sm text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand" />
       </div>
 
-      <div className="flex-1 bg-white divide-y divide-gray-100">
+      <div className="flex-1 px-3 py-3 space-y-2">
         {carregando && (
           <div className="flex items-center justify-center py-16">
-            <div className="w-7 h-7 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
+            <div className="w-7 h-7 border-2 border-brand border-t-transparent rounded-full animate-spin" />
           </div>
         )}
 
@@ -85,20 +74,20 @@ export default function ClientesComVisitas() {
         )}
 
         {filtrados.map(c => (
-          <div key={c.nome} className="px-4 py-3 flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-orange-100 flex items-center justify-center shrink-0">
-              <span className="text-orange-600 font-bold text-xs">{c.nome.charAt(0).toUpperCase()}</span>
+          <div key={c.nome} className="bg-white rounded-xl shadow-sm border border-gray-100 px-4 py-3 flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-brand/20 flex items-center justify-center shrink-0">
+              <span className="text-brand-dark font-bold text-sm">{c.nome.charAt(0).toUpperCase()}</span>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="font-semibold text-gray-900 text-sm truncate">{c.nome}</p>
+              <p className="font-bold text-gray-900 text-sm truncate">{c.nome}</p>
               <p className="text-[11px] text-gray-400 mt-0.5">
                 {c.total} visita{c.total !== 1 ? 's' : ''}
-                {c.ultimaVisita ? ` · Última: ${formatarData(c.ultimaVisita)}` : ''}
+                {c.ultimaVisita ? ` · Última: ${fmt(c.ultimaVisita)}` : ''}
               </p>
-              {c.vendedor && <p className="text-[11px] text-orange-500">{c.vendedor}</p>}
+              {c.vendedor && <p className="text-[11px] text-brand-dark">{c.vendedor}</p>}
             </div>
-            <div className="text-right shrink-0">
-              <span className="text-lg font-black text-orange-500">{c.total}</span>
+            <div className="shrink-0 w-9 h-9 rounded-full bg-brand flex items-center justify-center">
+              <span className="text-white font-black text-sm">{c.total}</span>
             </div>
           </div>
         ))}
