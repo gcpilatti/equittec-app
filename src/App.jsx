@@ -2,29 +2,44 @@ import { useState, useEffect } from 'react';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { auth } from './firebase';
 import Login from './Login';
-import FormularioVisita from './FormularioVisita';
+import Agenda from './Agenda';
 import ListaVisitas from './ListaVisitas';
+import ClientesComVisitas from './ClientesComVisitas';
+import FormularioVisita from './FormularioVisita';
 
-function IconNovaVisita({ ativo }) {
+// ── Ícones ────────────────────────────────────────────────────────────────────
+
+function IcAgenda({ ativo }) {
   return (
-    <svg className={`w-5 h-5 ${ativo ? 'text-blue-700' : 'text-gray-400'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+    <svg className={`w-5 h-5 ${ativo ? 'text-orange-500' : 'text-gray-400'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
     </svg>
   );
 }
 
-function IconHistorico({ ativo }) {
+function IcVisitas({ ativo }) {
   return (
-    <svg className={`w-5 h-5 ${ativo ? 'text-blue-700' : 'text-gray-400'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+    <svg className={`w-5 h-5 ${ativo ? 'text-orange-500' : 'text-gray-400'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2M9 12h6m-3-3v6" />
     </svg>
   );
 }
+
+function IcClientes({ ativo }) {
+  return (
+    <svg className={`w-5 h-5 ${ativo ? 'text-orange-500' : 'text-gray-400'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+    </svg>
+  );
+}
+
+// ── App ───────────────────────────────────────────────────────────────────────
 
 export default function App() {
-  const [usuario, setUsuario]     = useState(null);
+  const [usuario, setUsuario]         = useState(null);
   const [verificando, setVerificando] = useState(true);
-  const [aba, setAba]             = useState('nova'); // 'nova' | 'historico'
+  const [aba, setAba]                 = useState('visitas'); // 'agenda' | 'visitas' | 'clientes'
+  const [telaForm, setTelaForm]       = useState(null);     // null | 'nova' | { ...visitaObj }
 
   useEffect(() => {
     const cancelar = onAuthStateChanged(auth, user => {
@@ -34,20 +49,12 @@ export default function App() {
     return cancelar;
   }, []);
 
-  async function handleLogout() {
-    try {
-      await signOut(auth);
-    } catch (err) {
-      console.error('Erro ao sair:', err);
-    }
-  }
-
   if (verificando) {
     return (
-      <div className="min-h-screen bg-blue-700 flex items-center justify-center">
+      <div className="min-h-screen bg-orange-500 flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
-          <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center shadow-md">
-            <span className="text-blue-700 font-black text-2xl">EQ</span>
+          <div className="w-16 h-16 bg-white rounded-xl flex items-center justify-center shadow">
+            <span className="text-orange-500 font-black text-2xl">EQ</span>
           </div>
           <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
         </div>
@@ -55,70 +62,81 @@ export default function App() {
     );
   }
 
-  if (!usuario) {
-    return <Login />;
+  if (!usuario) return <Login />;
+
+  // Tela de formulário (nova visita ou editar) sobrepõe tudo
+  if (telaForm) {
+    return (
+      <FormularioVisita
+        visitaExistente={telaForm === 'nova' ? null : telaForm}
+        onVoltar={() => setTelaForm(null)}
+        usuarioEmail={usuario.email}
+        usuarioId={usuario.uid}
+      />
+    );
   }
 
+  const TABS = [
+    { id: 'agenda',   label: 'AGENDA',              Ic: IcAgenda },
+    { id: 'visitas',  label: 'VISITAS',              Ic: IcVisitas },
+    { id: 'clientes', label: 'CLIENTES COM VISITAS', Ic: IcClientes },
+  ];
+
   return (
-    <div className="relative">
-      {/* Conteúdo principal */}
-      <div className="pb-16">
-        {aba === 'nova'      && <FormularioVisita usuarioEmail={usuario.email} usuarioId={usuario.uid} />}
-        {aba === 'historico' && <ListaVisitas />}
-      </div>
+    <div className="relative pb-16">
+
+      {/* Conteúdo da aba ativa */}
+      {aba === 'agenda'   && <Agenda />}
+      {aba === 'visitas'  && (
+        <ListaVisitas
+          onNovaVisita={() => setTelaForm('nova')}
+          onEditar={v => setTelaForm(v)}
+        />
+      )}
+      {aba === 'clientes' && <ClientesComVisitas />}
+
+      {/* FAB — botão + */}
+      <button
+        onClick={() => setTelaForm('nova')}
+        className="fixed bottom-20 right-4 z-50 w-14 h-14 bg-orange-500 hover:bg-orange-600 active:scale-95 text-white rounded-full shadow-lg flex items-center justify-center transition-all"
+        aria-label="Nova Visita"
+      >
+        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+        </svg>
+      </button>
 
       {/* Barra de navegação inferior */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-100 shadow-lg">
+      <div className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-200 shadow-lg">
         <div className="flex items-stretch">
-
-          {/* Aba Nova Visita */}
-          <button
-            type="button"
-            onClick={() => setAba('nova')}
-            className={`flex-1 flex flex-col items-center justify-center gap-1 py-2.5 transition-colors
-              ${aba === 'nova' ? 'text-blue-700' : 'text-gray-400 hover:text-gray-600'}`}
-          >
-            <IconNovaVisita ativo={aba === 'nova'} />
-            <span className={`text-[10px] font-bold uppercase tracking-wide ${aba === 'nova' ? 'text-blue-700' : 'text-gray-400'}`}>
-              Nova Visita
-            </span>
-            {aba === 'nova' && <span className="absolute bottom-0 h-0.5 w-1/2 bg-blue-700 rounded-t-full left-0" />}
-          </button>
-
-          {/* Divisor + info usuário */}
-          <div className="flex flex-col items-center justify-center px-3 border-x border-gray-100">
-            <span className="text-[9px] text-gray-300 uppercase tracking-wide whitespace-nowrap">conectado</span>
-            <span className="text-[10px] font-semibold text-gray-500 max-w-[120px] truncate">{usuario.email}</span>
-          </div>
-
-          {/* Aba Histórico */}
-          <button
-            type="button"
-            onClick={() => setAba('historico')}
-            className={`flex-1 flex flex-col items-center justify-center gap-1 py-2.5 transition-colors
-              ${aba === 'historico' ? 'text-blue-700' : 'text-gray-400 hover:text-gray-600'}`}
-          >
-            <IconHistorico ativo={aba === 'historico'} />
-            <span className={`text-[10px] font-bold uppercase tracking-wide ${aba === 'historico' ? 'text-blue-700' : 'text-gray-400'}`}>
-              Histórico
-            </span>
-            {aba === 'historico' && <span className="absolute bottom-0 h-0.5 w-1/2 bg-blue-700 rounded-t-full right-0" />}
-          </button>
-
+          {TABS.map(({ id, label, Ic }) => (
+            <button
+              key={id}
+              type="button"
+              onClick={() => setAba(id)}
+              className={`flex-1 flex flex-col items-center justify-center gap-1 py-2.5 transition-colors
+                ${aba === id ? 'text-orange-500' : 'text-gray-400 hover:text-gray-600'}`}
+            >
+              <Ic ativo={aba === id} />
+              <span className={`text-[9px] font-bold uppercase tracking-wide leading-none text-center
+                ${aba === id ? 'text-orange-500' : 'text-gray-400'}`}
+              >
+                {label}
+              </span>
+              {aba === id && (
+                <span className="absolute bottom-0 h-0.5 bg-orange-500 rounded-t-full"
+                  style={{ width: `${100 / TABS.length}%`, left: `${(TABS.findIndex(t => t.id === id) / TABS.length) * 100}%` }}
+                />
+              )}
+            </button>
+          ))}
         </div>
-
-        {/* Botão sair discreto */}
-        <button
-          onClick={handleLogout}
-          className="absolute top-2 right-[calc(50%-56px)] translate-x-full text-[9px] font-bold text-red-400 hover:text-red-600 px-2 py-1 transition hidden"
-          aria-label="Sair"
-        />
       </div>
 
-      {/* Botão sair flutuante */}
+      {/* Botão sair discreto */}
       <button
-        onClick={handleLogout}
-        className="fixed top-3 right-4 z-50 text-[10px] font-bold text-white/70 hover:text-white bg-white/10 hover:bg-white/20 rounded-lg px-2.5 py-1 transition backdrop-blur-sm"
+        onClick={() => signOut(auth)}
+        className="fixed top-12 right-3 z-50 text-[10px] font-bold text-white/80 hover:text-white bg-black/20 hover:bg-black/30 rounded-lg px-2 py-1 transition"
       >
         Sair
       </button>
