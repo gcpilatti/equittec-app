@@ -17,7 +17,7 @@ function formatarData(valor) {
   return '';
 }
 
-export default function ListaVisitas({ onEditar }) {
+export default function ListaVisitas({ onVerDetalhes, onEditar }) {
   const [visitas, setVisitas]       = useState([]);
   const [carregando, setCarregando] = useState(true);
   const [busca, setBusca]           = useState('');
@@ -119,28 +119,35 @@ export default function ListaVisitas({ onEditar }) {
         )}
 
         {visitasFiltradas.map(v => (
-          <div key={v.id} className="bg-white rounded-xl shadow-sm border border-gray-100 px-4 py-3">
+          <div key={v.id} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
 
-            {/* Linha 1: nome + data */}
-            <div className="flex items-start justify-between gap-3">
-              <p className="font-bold text-gray-900 text-sm leading-tight">{v.clienteNome || '—'}</p>
-              <p className="text-gray-500 text-xs shrink-0 font-medium pt-0.5">{formatarData(v.dataVisita)}</p>
-            </div>
+            {/* Área clicável para abrir detalhes */}
+            <button
+              type="button"
+              onClick={() => onVerDetalhes(v)}
+              className="w-full text-left px-4 pt-3 pb-2 hover:bg-gray-50/80 transition-colors"
+            >
+              {/* Linha 1: nome + data */}
+              <div className="flex items-start justify-between gap-3">
+                <p className="font-bold text-gray-900 text-sm leading-tight">{v.clienteNome || '—'}</p>
+                <p className="text-gray-500 text-xs shrink-0 font-medium pt-0.5">{formatarData(v.dataVisita)}</p>
+              </div>
 
-            {/* Linha 2: obs / motivo */}
-            {(v.obsVisita || v.motivoVisita) && (
-              <p className="text-brand-dark text-sm mt-1 leading-snug line-clamp-2">
-                {v.obsVisita || v.motivoVisita}
-              </p>
-            )}
+              {/* Linha 2: obs / motivo */}
+              {(v.obsVisita || v.motivoVisita) && (
+                <p className="text-brand-dark text-sm mt-1 leading-snug line-clamp-2">
+                  {v.obsVisita || v.motivoVisita}
+                </p>
+              )}
 
-            {/* Vendedor */}
-            {v.vendedorNome && (
-              <p className="text-gray-400 text-xs mt-1">{v.vendedorNome}</p>
-            )}
+              {/* Vendedor */}
+              {v.vendedorNome && (
+                <p className="text-gray-400 text-xs mt-1">{v.vendedorNome}</p>
+              )}
+            </button>
 
             {/* Ações */}
-            <div className="flex justify-end gap-1 mt-2 pt-2 border-t border-gray-50">
+            <div className="flex justify-end gap-1 px-4 pb-2 border-t border-gray-50 pt-1.5">
               {confirmar === v.id ? (
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-gray-500">Excluir?</span>

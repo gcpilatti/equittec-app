@@ -6,6 +6,7 @@ import Agenda from './Agenda';
 import ListaVisitas from './ListaVisitas';
 import ClientesComVisitas from './ClientesComVisitas';
 import FormularioVisita from './FormularioVisita';
+import DetalheVisita from './DetalheVisita';
 
 function IcAgenda({ ativo }) {
   return (
@@ -33,7 +34,8 @@ export default function App() {
   const [usuario, setUsuario]         = useState(null);
   const [verificando, setVerificando] = useState(true);
   const [aba, setAba]                 = useState('visitas');
-  const [telaForm, setTelaForm]       = useState(null); // null | 'nova' | { ...visitaObj }
+  const [telaForm, setTelaForm]       = useState(null);    // null | 'nova' | { ...visitaObj }
+  const [telaDetalhe, setTelaDetalhe] = useState(null);    // null | { ...visitaObj }
 
   useEffect(() => {
     const cancelar = onAuthStateChanged(auth, user => {
@@ -58,6 +60,16 @@ export default function App() {
 
   if (!usuario) return <Login />;
 
+  if (telaDetalhe) {
+    return (
+      <DetalheVisita
+        visita={telaDetalhe}
+        onVoltar={() => setTelaDetalhe(null)}
+        onEditar={() => { setTelaForm(telaDetalhe); setTelaDetalhe(null); }}
+      />
+    );
+  }
+
   if (telaForm) {
     return (
       <FormularioVisita
@@ -78,7 +90,7 @@ export default function App() {
   return (
     <div className="relative pb-16">
       {aba === 'agenda'   && <Agenda />}
-      {aba === 'visitas'  && <ListaVisitas onEditar={v => setTelaForm(v)} />}
+      {aba === 'visitas'  && <ListaVisitas onVerDetalhes={v => setTelaDetalhe(v)} onEditar={v => setTelaForm(v)} />}
       {aba === 'clientes' && <ClientesComVisitas />}
 
       {/* FAB */}
