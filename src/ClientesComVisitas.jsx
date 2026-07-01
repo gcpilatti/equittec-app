@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { collection, query, orderBy, getDocs } from 'firebase/firestore';
 import { db } from './firebase';
 
-export default function ClientesComVisitas() {
+export default function ClientesComVisitas({ onAbrirMenu }) {
   const [clientes, setClientes] = useState([]);
   const [carregando, setCarregando] = useState(true);
   const [busca, setBusca] = useState('');
@@ -42,7 +42,7 @@ export default function ClientesComVisitas() {
   return (
     <div className="flex flex-col min-h-screen bg-gray-100">
       <div className="bg-brand px-3 pt-10 pb-2 flex items-center gap-2 shadow">
-        <button className="p-2 text-white">
+        <button onClick={onAbrirMenu} className="p-2 text-white">
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" /></svg>
         </button>
         <div className="w-7 h-7 bg-white rounded flex items-center justify-center mr-1">

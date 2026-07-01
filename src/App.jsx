@@ -7,6 +7,8 @@ import ListaVisitas from './ListaVisitas';
 import ClientesComVisitas from './ClientesComVisitas';
 import FormularioVisita from './FormularioVisita';
 import DetalheVisita from './DetalheVisita';
+import MenuLateral from './MenuLateral';
+import NovoCliente from './NovoCliente';
 
 function IcAgenda({ ativo }) {
   return (
@@ -31,11 +33,13 @@ function IcClientes({ ativo }) {
 }
 
 export default function App() {
-  const [usuario, setUsuario]         = useState(null);
-  const [verificando, setVerificando] = useState(true);
-  const [aba, setAba]                 = useState('visitas');
-  const [telaForm, setTelaForm]       = useState(null);    // null | 'nova' | { ...visitaObj }
-  const [telaDetalhe, setTelaDetalhe] = useState(null);    // null | { ...visitaObj }
+  const [usuario, setUsuario]           = useState(null);
+  const [verificando, setVerificando]   = useState(true);
+  const [aba, setAba]                   = useState('visitas');
+  const [telaForm, setTelaForm]         = useState(null);
+  const [telaDetalhe, setTelaDetalhe]   = useState(null);
+  const [menuAberto, setMenuAberto]     = useState(false);
+  const [novoClienteAberto, setNovoClienteAberto] = useState(false);
 
   useEffect(() => {
     const cancelar = onAuthStateChanged(auth, user => {
@@ -89,14 +93,39 @@ export default function App() {
 
   return (
     <div className="relative pb-16">
-      {aba === 'agenda'   && <Agenda />}
-      {aba === 'visitas'  && <ListaVisitas onVerDetalhes={v => setTelaDetalhe(v)} onEditar={v => setTelaForm(v)} />}
-      {aba === 'clientes' && <ClientesComVisitas />}
+
+      {/* Menu Lateral */}
+      {menuAberto && (
+        <MenuLateral
+          usuarioEmail={usuario.email}
+          onFechar={() => setMenuAberto(false)}
+          onCadastrarCliente={() => setNovoClienteAberto(true)}
+          onSair={() => signOut(auth)}
+        />
+      )}
+
+      {/* Modal Novo Cliente */}
+      {novoClienteAberto && (
+        <NovoCliente
+          onSalvar={() => setNovoClienteAberto(false)}
+          onCancelar={() => setNovoClienteAberto(false)}
+        />
+      )}
+
+      {aba === 'agenda'   && <Agenda   onAbrirMenu={() => setMenuAberto(true)} />}
+      {aba === 'visitas'  && (
+        <ListaVisitas
+          onAbrirMenu={() => setMenuAberto(true)}
+          onVerDetalhes={v => setTelaDetalhe(v)}
+          onEditar={v => setTelaForm(v)}
+        />
+      )}
+      {aba === 'clientes' && <ClientesComVisitas onAbrirMenu={() => setMenuAberto(true)} />}
 
       {/* FAB */}
       <button
         onClick={() => setTelaForm('nova')}
-        className="fixed bottom-20 right-4 z-50 w-14 h-14 bg-brand hover:bg-brand-dark active:scale-95 text-white rounded-full shadow-lg flex items-center justify-center transition-all"
+        className="fixed bottom-20 right-4 z-30 w-14 h-14 bg-brand hover:bg-brand-dark active:scale-95 text-white rounded-full shadow-lg flex items-center justify-center transition-all"
         aria-label="Nova Visita"
       >
         <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -107,7 +136,7 @@ export default function App() {
       {/* Barra inferior */}
       <div className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-200 shadow-lg">
         <div className="flex items-stretch">
-          {TABS.map(({ id, label, Ic }, idx) => (
+          {TABS.map(({ id, label, Ic }) => (
             <button key={id} type="button" onClick={() => setAba(id)}
               className={`flex-1 flex flex-col items-center justify-center gap-1 py-2.5 relative transition-colors
                 ${aba === id ? 'text-brand' : 'text-gray-400 hover:text-gray-600'}`}
@@ -124,12 +153,6 @@ export default function App() {
           ))}
         </div>
       </div>
-
-      {/* Sair */}
-      <button onClick={() => signOut(auth)}
-        className="fixed top-12 right-3 z-50 text-[10px] font-bold text-white/80 hover:text-white bg-black/20 hover:bg-black/30 rounded-lg px-2 py-1 transition">
-        Sair
-      </button>
     </div>
   );
 }

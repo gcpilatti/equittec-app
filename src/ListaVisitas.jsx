@@ -17,7 +17,7 @@ function formatarData(valor) {
   return '';
 }
 
-export default function ListaVisitas({ onVerDetalhes, onEditar }) {
+export default function ListaVisitas({ onAbrirMenu, onVerDetalhes, onEditar }) {
   const [visitas, setVisitas]       = useState([]);
   const [carregando, setCarregando] = useState(true);
   const [busca, setBusca]           = useState('');
@@ -73,7 +73,7 @@ export default function ListaVisitas({ onVerDetalhes, onEditar }) {
 
       {/* Header */}
       <div className="bg-brand px-3 pt-10 pb-2 flex items-center gap-2 shadow">
-        <button className="p-2 text-white">
+        <button onClick={onAbrirMenu} className="p-2 text-white">
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
           </svg>
