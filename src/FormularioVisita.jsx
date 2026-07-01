@@ -4,6 +4,7 @@ import {
   getDocs, addDoc, updateDoc, doc, serverTimestamp,
 } from 'firebase/firestore';
 import { db } from './firebase';
+import NovoCliente from './NovoCliente';
 
 const TIPOS_PRODUCAO = ['MATRIZES','UPL - UNIDADE PRODUTORA DE LEITÕES','UC - UNIDADE CRECHE','UT - UNIDADE TERMINAÇÃO'];
 const TIPOS_SILO     = ['SILO TRINCHEIRA','SUPERFÍCIE'];
@@ -25,15 +26,15 @@ const VAZIO = {
 };
 
 const baseCls =
-  'w-full border border-gray-200 rounded-lg px-3 py-2.5 text-gray-800 text-sm ' +
+  'w-full border border-gray-300 rounded-lg px-3 py-2.5 text-gray-900 text-sm ' +
   'focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent ' +
-  'bg-gray-50 transition placeholder:text-gray-300';
+  'bg-white transition placeholder:text-gray-400';
 
 function Field({ label, required, children }) {
   return (
     <div className="flex flex-col gap-1">
-      <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
-        {label}{required && <span className="text-red-400 ml-0.5">*</span>}
+      <label className="text-[11px] font-bold text-gray-600 uppercase tracking-wider">
+        {label}{required && <span className="text-red-500 ml-0.5">*</span>}
       </label>
       {children}
     </div>
@@ -76,6 +77,7 @@ export default function FormularioVisita({ visitaExistente, onVoltar, usuarioEma
   const [carregandoHistorico, setCarregandoHistorico] = useState(false);
   const [enviando, setEnviando]     = useState(false);
   const [feedback, setFeedback]     = useState(null);
+  const [novoClienteAberto, setNovoClienteAberto] = useState(false);
   const dropdownRef = useRef(null);
 
   useEffect(() => {
@@ -139,6 +141,12 @@ export default function FormularioVisita({ visitaExistente, onVoltar, usuarioEma
     finally { setCarregandoHistorico(false); }
   }, []);
 
+  function aoNovoClienteSalvo(cliente) {
+    setClientes(prev => [...prev, cliente]);
+    setNovoClienteAberto(false);
+    aoSelecionarCliente(cliente);
+  }
+
   const set = field => e => setForm(prev => ({ ...prev, [field]: e.target.value }));
   const totalAnimaisLeite = (Number(form.vacasEmLactacao)||0) + (Number(form.novilhas)||0) + (Number(form.vacasSecas)||0);
   const mostrarCamposSilobag = form.utilizaSilobag === 'SIM';
@@ -191,6 +199,13 @@ export default function FormularioVisita({ visitaExistente, onVoltar, usuarioEma
   }
 
   return (
+    <>
+    {novoClienteAberto && (
+      <NovoCliente
+        onSalvar={aoNovoClienteSalvo}
+        onCancelar={() => setNovoClienteAberto(false)}
+      />
+    )}
     <form onSubmit={onSubmit} className="min-h-screen bg-gray-100 pb-20">
       {/* Header */}
       <div className="sticky top-0 z-40 bg-brand px-3 pt-10 pb-3 shadow flex items-center gap-3">
@@ -226,16 +241,27 @@ export default function FormularioVisita({ visitaExistente, onVoltar, usuarioEma
               onChange={e => { setBuscaCliente(e.target.value); setDropdownAberto(true); }}
               onFocus={() => setDropdownAberto(true)}
               className={baseCls} />
-            {dropdownAberto && clientesFiltrados.length > 0 && (
+            {dropdownAberto && (clientesFiltrados.length > 0 || buscaCliente.trim().length >= 2) && (
               <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-white border border-gray-200 rounded-lg shadow-xl max-h-52 overflow-y-auto">
                 {clientesFiltrados.map(c => (
                   <button key={c.id} type="button"
-                    className="w-full flex flex-col items-start px-4 py-2.5 hover:bg-brand/10 border-b border-gray-50 last:border-0 text-left"
+                    className="w-full flex flex-col items-start px-4 py-2.5 hover:bg-brand/10 border-b border-gray-100 last:border-0 text-left"
                     onMouseDown={() => aoSelecionarCliente(c)}>
-                    <span className="font-semibold text-gray-800 text-sm">{c.pesNome}</span>
-                    <span className="text-[11px] text-gray-400">Cód. #{c.pesCodigo}{c.cidadeUf ? ` · ${c.cidadeUf}` : ''}</span>
+                    <span className="font-semibold text-gray-900 text-sm">{c.pesNome}</span>
+                    <span className="text-[11px] text-gray-500">Cód. #{c.pesCodigo}{c.cidadeUf ? ` · ${c.cidadeUf}` : ''}</span>
                   </button>
                 ))}
+                {/* Botão adicionar novo cliente */}
+                <button type="button"
+                  onMouseDown={() => { setDropdownAberto(false); setNovoClienteAberto(true); }}
+                  className="w-full flex items-center gap-2 px-4 py-3 bg-brand/5 hover:bg-brand/15 border-t border-brand/20 text-left transition">
+                  <span className="w-6 h-6 rounded-full bg-brand flex items-center justify-center shrink-0">
+                    <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                    </svg>
+                  </span>
+                  <span className="text-sm font-semibold text-brand-dark">Adicionar novo cliente</span>
+                </button>
               </div>
             )}
           </div>
@@ -361,5 +387,6 @@ export default function FormularioVisita({ visitaExistente, onVoltar, usuarioEma
         <p className="text-center text-[10px] text-gray-300 pb-2">Offline-First — sincroniza automaticamente ao reconectar</p>
       </div>
     </form>
+    </>
   );
 }
